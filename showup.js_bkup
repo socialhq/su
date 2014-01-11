@@ -1,0 +1,313 @@
+var links = [];
+var  NumberOfLinks = 0;
+var currentLink = 0;
+var imgs = [],
+	names = [],
+	descriptions = [],
+	viewers = [];
+var timestr = "";	
+var root = "";
+var getImgs, getNames, getDesc,getViewers, getLinks, processPage;
+var showData = {name:"", fullHtml:""};
+var mainData = {};
+var shows = [];
+
+require('webpage');
+require("cradle");
+require("sha1");
+require("jquery");
+require("jquery.couch");
+//require("couch");
+$.couch.urlPrefix = "http://localhost:5984";
+
+$.couch.db("mydb").create({
+    success: function(data) {
+        console.log(data);
+    },
+    error: function(status) {
+        console.log(status);
+    }
+});
+
+var pageXML='';
+
+
+var casper = require('casper').create({
+   
+    pageSettings: {
+        loadImages:  true,        // The WebPage instance used by Casper will
+        loadPlugins: true         // use these settings
+    },
+    //logLevel: "info",              // Only "info" level messages will be logged
+   // verbose: true                  // log messages will be printed out to the console
+});
+
+var timestr;
+var root = "C:\\Users\\Dar\\Dropbox\\WORKSPACE\\Showup\\Data\\";	
+
+var secs=false;
+
+function getTimeStr() {
+	var currentTime = new Date();
+	var month = currentTime.getMonth() + 1;
+	var day = currentTime.getDate();
+	var year = currentTime.getFullYear();
+	var hour = currentTime.getHours();
+	var minute = currentTime.getMinutes();
+	if (secs) {
+		minute += currentTime.getSeconds();
+	}
+	return year + "_" + month + "_" + day + "__" + hour + "_" + minute;
+}
+
+
+getImgs = function () {
+	
+	var im = document.querySelectorAll("img.lazy");
+	return  Array.prototype.map.call(im, function(e) {
+		return e.getAttribute("src");
+	});
+}
+
+getNames = function () {
+
+	var nm = document.querySelectorAll("span.stream-name");
+	return Array.prototype.map.call(nm, function(e) {
+		return e.innerHTML;
+	});
+}
+
+getViewers = function () {
+	var vw = document.querySelectorAll("span.stream-viewers");
+	return  Array.prototype.map.call(vw, function(e) {
+		return e.innerHTML;
+	});
+
+}
+
+ getDesc = function () {
+
+	var ds = document.querySelectorAll("span.stream-description");
+	return Array.prototype.map.call(ds, function(e) {
+		return e.innerHTML;
+	});
+}
+
+
+getName = function () {
+	
+	return document.querySelector('.white-username').text;
+
+};
+getLinks = function () {
+	var linksHtml = document.querySelectorAll("div.stream-frame a");
+	var urls = Array.prototype.map.call(linksHtml, function(e) {
+		return e.getAttribute("href");
+	});
+	
+	return urls.filter(function(elem, pos) {
+		return urls.indexOf(elem) == pos;
+	});
+
+}
+;/*
+processPage = function (link, content) {
+	var fs = require("fs");
+	var dir = root + timestr + "\\sessions\\" + link;
+	//	echo("tutaj");
+	//var cont = this.getPageContent();
+	fs.write(dir + timestr + ".html", content, "w");
+}
+*/
+
+
+
+casper.start();
+casper.userAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X)');
+
+casper.thenOpen("http://showup.tv/", function() {
+	this.echo(this.getTitle());
+	timestr = getTimeStr();
+
+	
+        //      casper.page.injectJs("/PATH/TO/jquery.js");
+        	
+
+	//mongoose.connect('mongodb://localhost/test');	
+});
+
+/***** CLICK BUTTON  ****/
+casper.then(function() {
+	// Click -btnon 1st result link
+	this.click("a.pink-btn")
+;	this.viewport(1400, 4000);
+
+	this.waitForText("Program Partnerski", function() {
+		this.echo("loaded main");
+		casper.page.injectJs("/PATH/TO/jquery.js");
+	});
+});
+/*
+/***** GetLinks  *****/
+casper.then(function() {
+	this.viewport(1400, 4000);
+	this.capture(root + timestr + "\\" + timestr + ".png");
+
+	imgs = this.evaluate(getImgs);
+	links = this.evaluate(getLinks);
+	viewers = this.evaluate(getViewers);
+	descriptions = this.evaluate(getDesc);
+	names = this.evaluate(getNames);
+
+	
+	mainData.imgs =  imgs;
+	mainData.links =  links;
+	mainData.viewers =  viewers;
+	mainData.descriptions =  descriptions;
+	mainData.names =  names;
+	
+
+
+	NumberOfLinks =  links.length;
+
+	this.echo("NoL: "+NumberOfLinks);
+
+	mainData.noShows = this.fetchText('#trans-num');
+	mainData.noWatchers = this.fetchText('#viewers-num');
+
+	this.echo(">>>>"+mainData.noWatchers ); 
+
+
+	var fs = require("fs");
+	var cont = this.getPageContent();
+	fs.write(root + timestr + "\\" + timestr + ".html", cont, "w");
+	fs.write(root + timestr + ".html", cont, "w");
+	
+	mainData.fileName = root + timestr + ".html";
+	mainData.filePath= root + timestr + '\\';
+
+	this.echo("Page saved");
+	
+	var i = 0;
+	var fileNames = [];
+
+	this.each(imgs, function(self, img) {
+		self.download("http://showup.tv/" + img, root + timestr + "\\" + timestr + "_" + links[i].substring(1) + ".png");
+		fileNames.push(root + timestr + "\\" + timestr + " " + links[i++].substring(1) + ".png");
+	});
+
+	mainData.imgFiles= fileNames;
+
+
+	this.echo("Img down: "+i);
+
+	mainData.time = timestr;
+	
+	var flat = JSON.stringify(mainData);
+	fs.write(root + timestr + "\\" + timestr + ".json", flat, "w");
+
+
+});
+
+
+
+grabPages = function() {
+	this.then(selectLink);
+};
+
+selectLink  = function  () {
+  if (currentLink < NumberOfLinks) {
+        this.then(getShow);
+    } else {
+        //finish
+    }
+};
+
+getShow= function  () {
+
+	//this.echo(">>>>>"+links[currentLink]);
+	casper.open('http://showup.tv'+links[currentLink]).then(function() {
+		this.wait(10000);
+		this.echo(this.getTitle());
+		showData .sname = this.evaluate(getName);
+		showData.fullHtml = this.getPageContent();
+		this.echo( "processing item " +c(urrentLink +1)+ " out of " + NumberOfLinks + " | " + showData.sname);
+	});
+
+	this. then(processPage);
+};
+
+processPage = function () {
+	
+	filePrefix = root + timestr + "\\" + timestr +"_"+showData.sname+'_capture_'+currentLink;	
+	
+	var fs = require("fs");
+	
+	this.echo("Dumping to string@ " + filePrefix +".serialized");
+	
+	var filename = filePrefix +".serialized";
+	fs.write(filename, JSON.stringify(showData), "w");
+	var filename = filePrefix +".html";
+	fs.write(filename, showData.fullHtml, "w");
+	
+	this.echo("Capturing@"+ filePrefix+".png");
+	this.capture(filePrefix+".png");
+
+
+	currentLink++;
+	this.then(selectLink);
+
+};
+
+
+casper.then(grabPages);
+
+/*
+casper.then(function() {
+
+	casper.each(links, function(self, link) {
+		this.thenOpen(link, function() {
+	
+	//this.capture(root + timestr + "\\" + timestr +"_"+link.substr(1) +".png");
+	this.echo(this.getTitle() + " - " + link);
+	});
+	});
+
+});
+
+/*
+//Process active shows
+casper.then(function()   {
+	this.eachThen(links, function(response) {
+		this.thenOpen(response.data, function(response) {
+		//	this.echo(response.url);
+			//this.echo(response);
+			///this.echo("page content ********************");
+			//this.echo(this.getPageContent());
+			name = this.evaluate(getName);
+		//	this.echo(name);
+			processPage(response.url, this.getPageContent());
+		});
+	});
+});
+*/
+
+
+casper.run(function() {
+	// echo results in some pretty fashion
+	//  this.echo(" - " + links.join("\n - "));
+	// this.echo(" - " + imgs.join("\n - ")).exit();
+	this.exit();
+
+});
+
+
+
+/*
+ .white-username
+#viewersOnline
+
+chatView
+
+
+*/

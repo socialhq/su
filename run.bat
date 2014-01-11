@@ -1,0 +1,1 @@
+casperjs --web-security=no --load-plugins=yes --remote-debugger-port=9000 --remote-debugger-autorun=yes --cookies-file=cookies.txt showup.js

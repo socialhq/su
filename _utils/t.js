@@ -1,0 +1,4 @@
+
+function myf(){
+console.log('================');
+}

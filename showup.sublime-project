@@ -1,0 +1,33 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "Data"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "."
+		},
+		{
+			"follow_symlinks": true,
+			"path": "C:\\Users\\Dar\\Dropbox\\WORKSPACE\\Libs"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "C:\\phantomjs\\examples"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "C:\\Users\\Dar\\Dropbox\\WORKSPACE\\Libs\\CasperJs_Lib"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "C:\\Program Files (x86)\\Apache Software Foundation\\CouchDB\\share\\couchdb\\www\\script"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "C:\\Users\\Dar\\Dropbox\\WORKSPACE\\Libs\\screenspook-master"
+		}
+	]
+}
